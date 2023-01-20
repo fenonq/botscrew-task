@@ -28,8 +28,7 @@ public class Lector {
     @OneToOne(mappedBy = "headOfDepartment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Department mainDepartment;
 
-    @ManyToMany(cascade = CascadeType.ALL,
-            mappedBy = "lectors", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "lectors", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Department> departments;
 
     @Override
@@ -57,4 +56,5 @@ public class Lector {
                 ", departments=" + departments +
                 '}';
     }
+
 }

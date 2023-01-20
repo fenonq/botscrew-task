@@ -1,20 +1,18 @@
 package com.fenonq.botscrewtask.service.impl;
 
-import com.fenonq.botscrewtask.model.Department;
+import com.fenonq.botscrewtask.exception.EntityNotFoundException;
 import com.fenonq.botscrewtask.model.enums.Degree;
 import com.fenonq.botscrewtask.model.Lector;
 import com.fenonq.botscrewtask.repository.DepartmentRepository;
 import com.fenonq.botscrewtask.repository.LectorRepository;
 import com.fenonq.botscrewtask.service.UniversityService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UniversityServiceImpl implements UniversityService {
@@ -24,15 +22,15 @@ public class UniversityServiceImpl implements UniversityService {
 
     @Override
     public String showHeadOfDepartmentByName(String departmentName) {
-        log.info("showing head of department by departmentName: {}...", departmentName);
+        validateDepartment(departmentName);
         Lector headLector = lectorRepository.findByMainDepartmentName(departmentName);
-        return String.format("Head of %s department is %s",
-                departmentName, headLector.getName());
+        return String.format("Head of %s department is %s %s.",
+                departmentName, headLector.getName(), headLector.getSurname());
     }
 
     @Override
     public String showStatisticsByDepartmentName(String departmentName) {
-        log.info("showing statistics of department by departmentName: {}...", departmentName);
+        validateDepartment(departmentName);
         Long countAssistants =
                 departmentRepository
                         .countEmployeesByDepartmentNameAndDegree(departmentName, Degree.ASSISTANT);
@@ -68,25 +66,34 @@ public class UniversityServiceImpl implements UniversityService {
 
     @Override
     public String showAvgSalaryByDepartmentName(String departmentName) {
-        log.info("showing average salary of department by departmentName: {}...", departmentName);
+        validateDepartment(departmentName);
         BigDecimal avgSalary = departmentRepository.averageSalaryByDepartmentName(departmentName);
-        return String.format("The average salary of %s is %g", departmentName, avgSalary);
+        return String.format("The average salary of %s is %g.", departmentName, avgSalary);
     }
 
     @Override
     public String showEmployeeCountByDepartmentName(String departmentName) {
-        log.info("showing count of employee for department: {}...", departmentName);
+        validateDepartment(departmentName);
         Long countEmployees = departmentRepository.countEmployeesByDepartmentName(departmentName);
         return countEmployees.toString();
     }
 
     @Override
     public String globalSearch(String template) {
-        log.info("global search by template: {}...", template);
         Set<Lector> foundedLectors = lectorRepository.findAllByNameContainsOrSurnameContains(template, template);
-        return foundedLectors.stream()
+        String result = foundedLectors.stream()
                 .map(lector -> lector.getName() + " " + lector.getSurname())
                 .collect(Collectors.joining(", "));
+        if (result.isBlank()) {
+            throw new EntityNotFoundException("Nothing found!");
+        }
+        return result;
+    }
+
+    private void validateDepartment(String departmentName) {
+        if (departmentRepository.findByName(departmentName) == null) {
+            throw new EntityNotFoundException(String.format("Department %s not found!", departmentName));
+        }
     }
 
 }
