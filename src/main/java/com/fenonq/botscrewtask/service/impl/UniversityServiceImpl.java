@@ -21,7 +21,7 @@ public class UniversityServiceImpl implements UniversityService {
     private final DepartmentRepository departmentRepository;
 
     @Override
-    public String showHeadOfDepartmentByName(String departmentName) {
+    public String showHeadOfDepartmentByName(String departmentName) throws EntityNotFoundException {
         validateDepartment(departmentName);
         Lector headLector = lectorRepository.findByMainDepartmentName(departmentName);
         return String.format("Head of %s department is %s %s.",
@@ -29,7 +29,7 @@ public class UniversityServiceImpl implements UniversityService {
     }
 
     @Override
-    public String showStatisticsByDepartmentName(String departmentName) {
+    public String showStatisticsByDepartmentName(String departmentName) throws EntityNotFoundException {
         validateDepartment(departmentName);
         Long countAssistants =
                 departmentRepository
@@ -65,21 +65,21 @@ public class UniversityServiceImpl implements UniversityService {
     }
 
     @Override
-    public String showAvgSalaryByDepartmentName(String departmentName) {
+    public String showAvgSalaryByDepartmentName(String departmentName) throws EntityNotFoundException {
         validateDepartment(departmentName);
         BigDecimal avgSalary = departmentRepository.averageSalaryByDepartmentName(departmentName);
         return String.format("The average salary of %s is %g.", departmentName, avgSalary);
     }
 
     @Override
-    public String showEmployeeCountByDepartmentName(String departmentName) {
+    public String showEmployeeCountByDepartmentName(String departmentName) throws EntityNotFoundException {
         validateDepartment(departmentName);
         Long countEmployees = departmentRepository.countEmployeesByDepartmentName(departmentName);
         return countEmployees.toString();
     }
 
     @Override
-    public String globalSearch(String template) {
+    public String globalSearch(String template) throws EntityNotFoundException {
         Set<Lector> foundedLectors = lectorRepository.findAllByNameContainsOrSurnameContains(template, template);
         String result = foundedLectors.stream()
                 .map(lector -> lector.getName() + " " + lector.getSurname())
@@ -90,7 +90,7 @@ public class UniversityServiceImpl implements UniversityService {
         return result;
     }
 
-    private void validateDepartment(String departmentName) {
+    private void validateDepartment(String departmentName) throws EntityNotFoundException {
         if (departmentRepository.findByName(departmentName) == null) {
             throw new EntityNotFoundException(String.format("Department %s not found!", departmentName));
         }

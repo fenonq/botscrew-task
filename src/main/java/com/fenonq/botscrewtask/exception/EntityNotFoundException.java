@@ -1,6 +1,6 @@
 package com.fenonq.botscrewtask.exception;
 
-public class EntityNotFoundException extends RuntimeException {
+public class EntityNotFoundException extends Exception {
 
     private static final String DEFAULT_MESSAGE = "Entity not found!";
 
